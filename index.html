@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Taks tracker</title>
+	<link rel="stylesheet" href="foundation.min.css">
+	<style>
+		body {
+			padding-top: 20px;
+		}
+		ul {
+			list-style: none;
+			padding: 0;
+			margin: 0;
+		}
+		.checked {
+			text-decoration: line-through;
+		}
+	</style>
+</head>
+<body>
+	<div id="app">
+		<div class="row">
+	  		<form action="" v-on:submit.prevent="addTask">
+	  			<input type="text" name="taskName">
+	  			<textarea name="taskDesc" id="" cols="30" rows="10"></textarea>
+	  			<button class="button" type="submit">Добавить задачу</button>
+	  		</form> 
+	  		<ul class="menu">
+			  <li><a @click="showType=1">Активные задачи({{activeTask.length}})</a></li>
+			  <li><a @click="showType=2">Завершнные задачи({{ closedTask.length }})</a></li>
+			</ul>		
+			<div class="tasks">
+				<ul>
+					<li v-for="(task, index) in showTask">
+						<div class="callout">
+							<button class="close-button" type="button" @click="removeTask(index)">
+							    <span aria-hidden="true">&times;</span>
+							  </button>
+							<h5>Задача: {{ task.name }}</h5>
+							<hr>				
+							<p>Описание задачи: {{ task.text }}</p>
+							<div class="row">
+								<form action="" v-on:submit.prevent="addToCheckList(index, $event)">
+									<div class="column large-10">
+										<input type="text" name="checkText">
+									</div>
+									<button class="button small" type="submit">Добавить в чек лист</button>
+								</form>
+								<div class="column large-12">
+									<ul>
+										<li v-for="item in task.checkList" v-bind:class="{checked: item.checked}"> 
+											<input type="checkbox" v-model="item.checked"> 
+											{{item.name}}
+										</li>
+									</ul>
+								</div>
+							</div>
+							<a href="#" class="button" v-on:click.prevent="closeTask(index)">Завершить задачу</a>
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>	
+	</div>
+</body>
+<script src="vue.js"></script>
+
+<script>
+	var app = new Vue({
+		el: '#app',
+		data: {
+			taskList: [],
+			showType: 1
+		},
+		computed: {
+			showTask: function() {
+				if (this.showType == 1) {
+					return this.activeTask
+				} else {
+					return this.closedTask
+				}
+			},
+			activeTask: function() {
+				return this.taskList.filter(function(task){
+					return task.is_active
+				})
+			},
+			closedTask: function() {
+				return this.taskList.filter(function(task){
+					return !task.is_active
+				})
+			}
+		},
+		methods: {
+			
+			closeTask: function(index) {
+				this.taskList[index].is_active = false
+			},
+			addTask: function(event) {
+
+				var [taskName, taskDesc] = Array.from(new FormData(event.target).values());
+				
+				if (!taskName || !taskDesc){
+					alert("Введите название и описание задачи!")
+				} else {
+					this.taskList.push({
+						is_active: true,
+						name: taskName,
+						text: taskDesc,
+						checkList: []
+					})
+					event.target.reset();
+				}
+				
+			},
+			removeTask: function(index) {
+				this.taskList.splice(index, 1)
+			},
+			addToCheckList: function(index, event) {
+				this.taskList[index].checkList.push({
+					name:event.target.checkText.value,
+					checked: false
+				});
+				event.target.reset();
+
+			}
+		}
+	})
+</script>
+</html>
